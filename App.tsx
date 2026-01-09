@@ -2,8 +2,7 @@ import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText, ShieldCheck, Building, Scale, CreditCard, Gavel,
-  Mail, Phone, Linkedin, Facebook,
-  ChevronRight, ArrowUpRight
+  ChevronRight
 } from 'lucide-react';
 import { soundEngine } from './services/soundEngine';
 import { COMPETENCIES, EXPERIENCES, SKILLS } from './constants';
@@ -56,19 +55,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const message = formData.get('message');
-    
-    const mailtoUrl = `mailto:garciarobertrich@gmail.com?subject=Contact from Portfolio - ${name}&body=From: ${name} (${email})%0D%0A%0D%0A${message}`;
-    window.location.href = mailtoUrl;
-    e.currentTarget.reset();
-    soundEngine.playClick();
-  };
-
   const iconMap: Record<string, React.ReactNode> = {
     FileText: <FileText size={32} />,
     ShieldCheck: <ShieldCheck size={32} />,
@@ -98,7 +84,6 @@ const App: React.FC = () => {
             <NavLink sectionId="competencies" onClick={scrollToSection}>Competencies</NavLink>
             <NavLink sectionId="experience" onClick={scrollToSection}>Experience</NavLink>
             <NavLink sectionId="skills" onClick={scrollToSection}>Skills</NavLink>
-            <NavLink sectionId="contact" onClick={scrollToSection}>Contact</NavLink>
           </div>
           <div className="w-8 md:hidden"></div>
         </div>
@@ -125,14 +110,6 @@ const App: React.FC = () => {
             <p className="text-xl text-slate-400 mb-10 max-w-lg leading-relaxed">
               With over 15 years of excellence in real estate documentation, I bridge the gap between complex legal requirements and seamless property transactions.
             </p>
-            <div className="flex flex-wrap gap-4">
-               <button 
-                  onClick={() => scrollToSection('contact')}
-                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all transform hover:-translate-y-1 active:scale-95 shadow-lg shadow-blue-600/20"
-               >
-                 Inquire Now
-               </button>
-            </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
@@ -299,127 +276,6 @@ const App: React.FC = () => {
                 {skill.name}
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section - "Get in Touch" */}
-      <section id="contact" className="py-32 px-6 bg-slate-950 transition-colors scroll-mt-32">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            <div>
-              <SectionTitle 
-                title="Get in Touch" 
-                subtitle="Available for consulting, corporate legal support, and professional inquiries."
-              />
-              
-              <div className="space-y-10 mb-12">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-6 group cursor-pointer"
-                  onClick={() => window.open('tel:09175291018')}
-                  onMouseEnter={() => soundEngine.playHover()}
-                >
-                  <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm text-slate-300">
-                    <Phone />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Mobile</p>
-                    <p className="text-2xl font-black text-white">0917 529 1018</p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="flex items-center gap-6 group cursor-pointer"
-                  onClick={() => window.open('mailto:garciarobertrich@gmail.com')}
-                  onMouseEnter={() => soundEngine.playHover()}
-                >
-                  <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm text-slate-300">
-                    <Mail />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Email</p>
-                    <p className="text-2xl font-black break-all text-white">garciarobertrich@gmail.com</p>
-                  </div>
-                </motion.div>
-              </div>
-
-              <div className="flex gap-4">
-                <a 
-                  href="https://www.linkedin.com/in/robert-rich-garcia-0ba50b37a/" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-14 h-14 rounded-2xl bg-slate-800 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg shadow-black/50"
-                  onMouseEnter={() => soundEngine.playHover()}
-                  onClick={() => soundEngine.playClick()}
-                >
-                  <Linkedin size={24} />
-                </a>
-                <a 
-                  href="https://www.facebook.com/robert.rich.garcia" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-14 h-14 rounded-2xl bg-slate-800 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg shadow-black/50"
-                  onMouseEnter={() => soundEngine.playHover()}
-                  onClick={() => soundEngine.playClick()}
-                >
-                  <Facebook size={24} />
-                </a>
-              </div>
-            </div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="bg-slate-900/40 backdrop-blur-xl p-10 rounded-[2.5rem] border border-slate-800 shadow-2xl transition-colors"
-            >
-              <form onSubmit={handleContactSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Full Name</label>
-                    <input 
-                      required
-                      name="name"
-                      type="text" 
-                      placeholder="Juan Dela Cruz"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white placeholder-slate-600"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Email Address</label>
-                    <input 
-                      required
-                      name="email"
-                      type="email" 
-                      placeholder="juan@example.com"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white placeholder-slate-600"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Message</label>
-                  <textarea 
-                    required
-                    name="message"
-                    rows={5}
-                    placeholder="How can I help you today?"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none text-white placeholder-slate-600"
-                  ></textarea>
-                </div>
-                <button 
-                  type="submit"
-                  onMouseEnter={() => soundEngine.playHover()}
-                  className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-blue-500/20 transition-all transform hover:-translate-y-1 active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
-                >
-                  Send Message <ArrowUpRight size={20} />
-                </button>
-              </form>
-            </motion.div>
           </div>
         </div>
       </section>
