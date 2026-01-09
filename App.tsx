@@ -1,10 +1,9 @@
-import React, { useCallback, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { 
   FileText, ShieldCheck, Building, Scale, CreditCard, Gavel,
-  ChevronRight, Sparkles, Send, X, Loader2
+  ChevronRight
 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 import { soundEngine } from './services/soundEngine';
 import { COMPETENCIES, EXPERIENCES, SKILLS } from './constants';
 
@@ -46,117 +45,6 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string }> = ({ title, s
   </div>
 );
 
-const AIChat: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [response, setResponse] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleAskAI = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setResponse(null);
-    soundEngine.playClick();
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      const prompt = `You are an AI assistant for Robert Rich Garcia, a Real Estate Paralegal. 
-      Use this context to answer queries:
-      - Experience: ${JSON.stringify(EXPERIENCES)}
-      - Skills: ${JSON.stringify(SKILLS)}
-      - Competencies: ${JSON.stringify(COMPETENCIES)}
-      User query: ${query}
-      Keep answers professional, concise, and focused on Robert's legal expertise.`;
-
-      const result = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-      });
-
-      setResponse(result.text || "I couldn't generate a response. Please try again.");
-    } catch (error) {
-      console.error("AI Error:", error);
-      setResponse("Sorry, there was an error processing your request. Please ensure the API key is configured correctly in Netlify environment variables.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed bottom-8 right-8 z-[100]">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
-          >
-            <div className="p-6 bg-blue-600/10 border-b border-slate-800 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Sparkles size={20} className="text-blue-400" />
-                <span className="font-bold text-white">Career Assistant AI</span>
-              </div>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6 max-h-[400px] overflow-y-auto space-y-4">
-              {response ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-slate-300 text-sm leading-relaxed">
-                  {response}
-                </motion.div>
-              ) : (
-                <p className="text-slate-500 text-sm italic">Ask anything about Robert's professional background, skills, or experience...</p>
-              )}
-              {loading && (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="animate-spin text-blue-500" />
-                </div>
-              )}
-            </div>
-
-            <form onSubmit={handleAskAI} className="p-6 pt-0">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask about my legal expertise..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-slate-600"
-                />
-                <button
-                  disabled={loading}
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-400 disabled:opacity-50 transition-colors"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={() => soundEngine.playHover()}
-        className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-2xl shadow-blue-600/30 border border-blue-500/20 group relative"
-      >
-        {isOpen ? <X size={28} /> : <Sparkles size={28} className="group-hover:rotate-12 transition-transform" />}
-        {!isOpen && (
-          <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-950 animate-pulse" />
-        )}
-      </motion.button>
-    </div>
-  );
-};
-
 const App: React.FC = () => {
   const scrollToSection = useCallback((id: string) => {
     const element = document.getElementById(id);
@@ -177,8 +65,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen transition-colors duration-500 overflow-x-hidden bg-[#020617] text-slate-100 selection:bg-blue-600/30">
-      <AIChat />
-      
       {/* Background Glow Blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[140px] rounded-full" />
@@ -242,11 +128,11 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* About Section - Renamed title to Real Estate Paralegal */}
       <section id="about" className="py-32 px-6 bg-slate-950/50 transition-colors scroll-mt-32">
         <div className="max-w-7xl mx-auto">
           <SectionTitle 
-            title="The Professional" 
+            title="Real Estate Paralegal" 
             subtitle="Deep legal expertise met with strategic project management for the modern real estate market."
           />
           <div className="grid lg:grid-cols-3 gap-8">
