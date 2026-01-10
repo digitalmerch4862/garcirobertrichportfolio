@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText, ShieldCheck, Building, Scale, CreditCard, Gavel,
-  ChevronRight
+  ChevronRight, Download, Loader2, Check
 } from 'lucide-react';
 import { soundEngine } from './services/soundEngine';
 import { COMPETENCIES, EXPERIENCES, SKILLS } from './constants';
@@ -46,6 +46,10 @@ const SectionTitle: React.FC<{ title: string; subtitle?: string }> = ({ title, s
 );
 
 const App: React.FC = () => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadComplete, setDownloadComplete] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+
   const scrollToSection = useCallback((id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -54,37 +58,120 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleDownloadPDF = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    soundEngine.playClick();
+
+    const element = pdfRef.current;
+    if (!element) return;
+
+    const opt = {
+      margin: 8,
+      filename: 'Robert_Rich_Garcia_CV.pdf',
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      // @ts-ignore
+      await html2pdf().from(element).set(opt).save();
+      setDownloadComplete(true);
+      setTimeout(() => setDownloadComplete(false), 3000);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const iconMap: Record<string, React.ReactNode> = {
-    FileText: <FileText size={32} />,
-    ShieldCheck: <ShieldCheck size={32} />,
-    Building: <Building size={32} />,
-    Scale: <Scale size={32} />,
-    CreditCard: <CreditCard size={32} />,
-    Gavel: <Gavel size={32} />,
+    FileText: <FileText size={24} />,
+    ShieldCheck: <ShieldCheck size={24} />,
+    Building: <Building size={24} />,
+    Scale: <Scale size={24} />,
+    CreditCard: <CreditCard size={24} />,
+    Gavel: <Gavel size={24} />,
   };
 
   return (
     <div className="min-h-screen transition-colors duration-500 overflow-x-hidden bg-[#020617] text-slate-100 selection:bg-blue-600/30">
+      
+      {/* Hidden Condensed Resume Template for single-page PDF generation */}
+      <div className="hidden">
+        <div ref={pdfRef} className="p-8 bg-white text-slate-900 font-sans w-[210mm] min-h-[297mm] mx-auto overflow-hidden">
+          <div className="border-b-4 border-blue-600 pb-3 mb-5">
+            <h1 className="text-4xl font-black uppercase tracking-tight text-slate-950 mb-0">Robert Rich Garcia</h1>
+            <p className="text-xl font-bold text-blue-600 leading-tight">Real Estate Paralegal</p>
+            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mt-1">Professional Portfolio Summary</p>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-base font-black uppercase tracking-tighter text-slate-950 border-b border-slate-200 mb-2 pb-1">Professional Profile</h2>
+            <p className="text-slate-800 text-[11.5px] leading-relaxed">
+              Seasoned Real Estate Paralegal with over 15 years of excellence in real estate documentation, title transfers, and due diligence. Specializes in turning complex regulatory hurdles into efficient, standardized processes for major property developments and mixed-use estates.
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-base font-black uppercase tracking-tighter text-slate-950 border-b border-slate-200 mb-3 pb-1">Core Competencies</h2>
+            <div className="grid grid-cols-2 gap-x-12 gap-y-3">
+              {COMPETENCIES.map(comp => (
+                <div key={comp.id}>
+                  <p className="font-bold text-slate-900 text-[11px] mb-0.5">{comp.title}</p>
+                  <p className="text-[10px] text-slate-600 leading-snug">{comp.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-0">
+            <h2 className="text-base font-black uppercase tracking-tighter text-slate-950 border-b border-slate-200 mb-3 pb-1">Professional Experience</h2>
+            <div className="space-y-4">
+              {EXPERIENCES.map(exp => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-baseline mb-0.5">
+                    <p className="font-bold text-slate-950 text-[12px]">{exp.role}</p>
+                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">{exp.year}</p>
+                  </div>
+                  <p className="text-slate-700 font-extrabold italic text-[11px] mb-1">{exp.company}</p>
+                  <p className="text-[10.5px] text-slate-600 leading-normal">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Background Glow Blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none no-print">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[140px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-600/10 blur-[140px] rounded-full" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] bg-blue-500/5 blur-[100px] rounded-full" />
       </div>
 
       {/* Header Navigation */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl no-print">
         <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800 rounded-full px-6 md:px-8 py-3 flex items-center justify-between shadow-2xl transition-all">
           <div className="flex items-center gap-2">
             <span className="font-black tracking-tighter text-white text-lg md:text-xl uppercase truncate">Robert Rich Garcia</span>
           </div>
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             <NavLink sectionId="about" onClick={scrollToSection}>About</NavLink>
             <NavLink sectionId="competencies" onClick={scrollToSection}>Competencies</NavLink>
             <NavLink sectionId="experience" onClick={scrollToSection}>Experience</NavLink>
             <NavLink sectionId="skills" onClick={scrollToSection}>Skills</NavLink>
+            <button 
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className="ml-4 px-5 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+            >
+              {isDownloading ? <Loader2 size={14} className="animate-spin" /> : (downloadComplete ? <Check size={14} /> : <Download size={14} />)}
+              {isDownloading ? 'Generating...' : (downloadComplete ? 'Done' : 'Download CV')}
+            </button>
           </div>
-          <div className="w-8 md:hidden"></div>
+          <div className="w-8 lg:hidden"></div>
         </div>
       </nav>
 
@@ -100,7 +187,7 @@ const App: React.FC = () => {
               <ShieldCheck size={16} />
               Real Estate Paralegal
             </div>
-            <h1 className="text-6xl lg:text-8xl font-black leading-[0.9] mb-8 tracking-tighter text-white">
+            <h1 className="text-6xl lg:text-8xl font-black leading-[0.9] mb-8 tracking-tighter text-white uppercase">
               Precision in <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
                 Legal Design.
@@ -109,6 +196,22 @@ const App: React.FC = () => {
             <p className="text-xl text-slate-400 mb-10 max-w-lg leading-relaxed">
               With over 15 years of excellence in real estate documentation, I bridge the gap between complex legal requirements and seamless property transactions.
             </p>
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20"
+              >
+                Learn More
+              </button>
+              <button 
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
+                className="px-8 py-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-black uppercase tracking-widest transition-all flex items-center gap-3 disabled:opacity-50"
+              >
+                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {isDownloading ? 'GENERATING CV...' : 'DOWNLOAD CV'}
+              </button>
+            </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
@@ -128,7 +231,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* About Section - Renamed title to Real Estate Paralegal */}
+      {/* About Section */}
       <section id="about" className="py-32 px-6 bg-slate-950/50 transition-colors scroll-mt-32">
         <div className="max-w-7xl mx-auto">
           <SectionTitle 
@@ -280,7 +383,7 @@ const App: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-6 border-t border-slate-800 text-center transition-colors bg-[#010409]">
+      <footer className="py-16 px-6 border-t border-slate-800 text-center transition-colors bg-[#010409] no-print">
         <div className="max-w-7xl mx-auto">
           <p className="text-white font-extrabold text-2xl tracking-tighter mb-4 uppercase">Robert Rich Garcia</p>
           <p className="text-slate-500 font-medium">
@@ -292,6 +395,12 @@ const App: React.FC = () => {
                className="text-sm font-bold text-slate-600 hover:text-blue-400 transition-colors bg-transparent border-none cursor-pointer"
             >
               Back to Top
+            </button>
+            <button 
+               onClick={handleDownloadPDF} 
+               className="text-sm font-bold text-slate-600 hover:text-blue-400 transition-colors bg-transparent border-none cursor-pointer uppercase tracking-widest"
+            >
+              Download CV
             </button>
           </div>
         </div>
